@@ -1,6 +1,7 @@
 import { db } from '@/db';
 import { siteSettings, HomeContent } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export const defaultHome: Required<HomeContent> = {
   eyebrow: 'Indo-Western Couture', headline1: 'Where Heritage', headline2: 'Meets Modernity',
@@ -19,6 +20,7 @@ const fallback = {
 };
 
 export async function getSettings() {
+  try { noStore(); } catch {}
   try {
     let [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1));
     if (!row) [row] = await db.insert(siteSettings).values({ id: 1 }).returning();

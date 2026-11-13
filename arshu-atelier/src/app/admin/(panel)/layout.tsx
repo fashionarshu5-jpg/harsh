@@ -7,7 +7,7 @@ export const metadata = { title: 'ARSHU Admin', robots: { index: false, follow: 
 const NAV: [string, string][] = [
   ['/admin', 'Overview'], ['/admin/collections', 'Collections'], ['/admin/outfits', 'Outfits (Looks)'], ['/admin/moodboards', 'Moodboards'],
   ['/admin/sketches', 'Sketches Studio'], ['/admin/materials', 'Material Archive'], ['/admin/ai', 'AI Fashion Agent'],
-  ['/admin/approvals', 'Approvals'], ['/admin/settings', 'Website Customization'], ['/', 'View live site ↗'],
+  ['/admin/approvals', 'Approvals'], ['/admin/settings', 'Website Customization'], ['/admin/system', 'System Check'], ['/', 'View live site ↗'],
 ];
 
 export default function PanelLayout({ children }: { children: React.ReactNode }) {

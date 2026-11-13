@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { siteSettings } from '@/db/schema';
 import { getSettings } from '@/lib/settings';
+import { refreshSite } from '@/lib/revalidate';
 
 const hex = /^#[0-9a-fA-F]{6}$/;
 const font = (v: any, d: string) => (typeof v === 'string' && /^[A-Za-z0-9 ]{2,40}$/.test(v) ? v.trim() : d);
@@ -11,6 +12,7 @@ const font = (v: any, d: string) => (typeof v === 'string' && /^[A-Za-z0-9 ]{2,4
 export async function GET() { return NextResponse.json(await getSettings()); }
 
 export async function PUT(req: NextRequest) {
+  try {
   const b = await req.json();
   const cur = await getSettings();
   const col = (v: any, d: string) => (typeof v === 'string' && hex.test(v) ? v : d);
@@ -27,5 +29,9 @@ export async function PUT(req: NextRequest) {
     homeContent: typeof b.homeContent === 'object' && b.homeContent ? b.homeContent : cur.homeContent,
     updatedAt: new Date(),
   }).where(eq(siteSettings.id, 1)).returning();
+  refreshSite();
   return NextResponse.json(row);
+  } catch (e: any) {
+    return NextResponse.json({ error: String(e?.message || e).slice(0, 300) }, { status: 500 });
+  }
 }

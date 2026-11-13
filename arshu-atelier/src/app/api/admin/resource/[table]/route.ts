@@ -4,6 +4,7 @@ import { eq, desc, getTableColumns } from 'drizzle-orm';
 import { db } from '@/db';
 import * as s from '@/db/schema';
 import { slugify } from '@/lib/util';
+import { refreshSite } from '@/lib/revalidate';
 
 const T: Record<string, any> = {
   collections: s.collections, outfits: s.outfits, materials: s.materialArchive,
@@ -22,35 +23,45 @@ function clean(table: any, body: any) {
   return out;
 }
 const guard = (t: string) => T[t] || null;
+const fail = (e: any) => NextResponse.json({ error: String(e?.message || e).slice(0, 300) }, { status: 500 });
 
 export async function GET(_: NextRequest, { params }: { params: { table: string } }) {
   const t = guard(params.table);
   if (!t) return NextResponse.json({ error: 'Unknown table' }, { status: 404 });
-  return NextResponse.json(await db.select().from(t).orderBy(desc(t.createdAt)));
+  try { return NextResponse.json(await db.select().from(t).orderBy(desc(t.createdAt))); } catch (e) { return fail(e); }
 }
 
 export async function POST(req: NextRequest, { params }: { params: { table: string } }) {
   const t = guard(params.table);
   if (!t) return NextResponse.json({ error: 'Unknown table' }, { status: 404 });
-  const data = clean(t, await req.json());
-  if ('slug' in getTableColumns(t) && !data.slug) data.slug = slugify(data.title || 'untitled');
-  const [row] = await db.insert(t).values(data).returning();
-  return NextResponse.json(row);
+  try {
+    const data = clean(t, await req.json());
+    if ('slug' in getTableColumns(t) && !data.slug) data.slug = slugify(data.title || 'untitled');
+    const [row] = await db.insert(t).values(data).returning();
+    refreshSite();
+    return NextResponse.json(row);
+  } catch (e) { return fail(e); }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { table: string } }) {
   const t = guard(params.table);
   if (!t) return NextResponse.json({ error: 'Unknown table' }, { status: 404 });
-  const body = await req.json();
-  const data = clean(t, body);
-  if ('slug' in getTableColumns(t) && !data.slug && data.title) data.slug = slugify(data.title);
-  const [row] = await db.update(t).set(data).where(eq(t.id, body.id)).returning();
-  return NextResponse.json(row);
+  try {
+    const body = await req.json();
+    const data = clean(t, body);
+    if ('slug' in getTableColumns(t) && !data.slug && data.title) data.slug = slugify(data.title);
+    const [row] = await db.update(t).set(data).where(eq(t.id, body.id)).returning();
+    refreshSite();
+    return NextResponse.json(row);
+  } catch (e) { return fail(e); }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { table: string } }) {
   const t = guard(params.table);
   if (!t) return NextResponse.json({ error: 'Unknown table' }, { status: 404 });
-  await db.delete(t).where(eq(t.id, req.nextUrl.searchParams.get('id') || ''));
-  return NextResponse.json({ ok: true });
+  try {
+    await db.delete(t).where(eq(t.id, req.nextUrl.searchParams.get('id') || ''));
+    refreshSite();
+    return NextResponse.json({ ok: true });
+  } catch (e) { return fail(e); }
 }

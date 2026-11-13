@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Overview() {
   const n = async (q: PromiseLike<{ n: number }[]>) => (await safe(q, [{ n: 0 }]))[0]?.n ?? 0;
+  const dbOk = await safe(db.execute(sql`select 1`).then(() => true), false);
   const published = await n(db.select({ n: sql<number>`count(*)::int` }).from(outfits).where(eq(outfits.status, 'published')));
   const drafts = await safe(db.select().from(outfits).where(eq(outfits.status, 'draft')).orderBy(desc(outfits.createdAt)).limit(6), []);
   const pending = await n(db.select({ n: sql<number>`count(*)::int` }).from(pendingApprovals).where(eq(pendingApprovals.status, 'pending')));
@@ -16,6 +17,7 @@ export default async function Overview() {
   return (
     <>
       <h1 style={{ fontSize: 38 }}>Overview</h1>
+      {!dbOk && <div className="panel" style={{ borderColor: '#B3341B' }}><b className="err">❌ The database is not connected, so nothing you save can show on the website.</b><Link href="/admin/system" style={{ textDecoration: 'underline' }}>Open System Check to find out why →</Link></div>}
       <div className="stats">
         <div className="panel stat"><h3>Published looks</h3><b>{published}</b></div>
         <div className="panel stat"><h3>Draft looks</h3><b>{drafts.length}</b></div>

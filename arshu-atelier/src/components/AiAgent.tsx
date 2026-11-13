@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { RESEARCH_CATEGORIES } from '@/lib/admin-config';
+import { postJson } from '@/lib/postJson';
 
 const QUICK = [
   ['Draft Technical Spec', 'Draft a tailor technical specification for an Indo-Western structured jacket with mirror-work yoke: seam allowances, darts, interfacing, closures, stitch density.'],
@@ -21,15 +22,14 @@ export default function AiAgent() {
   async function run() {
     if (!cats.length) return setStatus('Select at least one category.');
     setRunning(true); setItems([]);
+    const errs: string[] = [];
     for (let i = 0; i < cats.length; i++) {
       setStatus(`Researching ${i + 1}/${cats.length}: ${cats[i]}…`);
-      try {
-        const j = await fetch('/api/admin/ai/research', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category: cats[i], region }) }).then((r) => r.json());
-        if (j.items) setItems((p) => [...p, ...j.items.map((x: any) => ({ ...x, mode: j.mode }))]);
-        else setStatus(j.error || 'Failed');
-      } catch { setStatus('Network error – continuing…'); }
+      const j = await postJson('/api/admin/ai/research', { category: cats[i], region });
+      if (j.items) setItems((p) => [...p, ...j.items.map((x: any) => ({ ...x, mode: j.mode }))]);
+      else errs.push(`${cats[i]}: ${j.error || 'failed'}${j.detail ? ' (' + j.detail + ')' : ''}`);
     }
-    setRunning(false); setStatus('Research finished. Review the cards below.');
+    setRunning(false); setStatus(errs.length ? '❌ ' + errs.join(' | ') : '✅ Research finished. Review the cards below.');
   }
 
   const act = async (e: any, what: 'save' | 'moodboard' | 'material') => {
@@ -48,8 +48,8 @@ export default function AiAgent() {
 
   async function ask(p: string) {
     setThinking(true); setReply('');
-    const j = await fetch('/api/admin/ai/assistant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: p }) }).then((r) => r.json());
-    setReply(j.text || j.error); setThinking(false);
+    const j = await postJson('/api/admin/ai/assistant', { prompt: p });
+    setReply(j.text || `❌ ${j.error || 'No answer'}${j.detail ? '\n\n' + j.detail : ''}`); setThinking(false);
   }
 
   return (

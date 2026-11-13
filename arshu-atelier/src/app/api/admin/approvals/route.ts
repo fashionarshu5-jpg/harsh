@@ -4,6 +4,7 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import * as s from '@/db/schema';
 import { slugify } from '@/lib/util';
+import { refreshSite } from '@/lib/revalidate';
 
 export async function GET() {
   return NextResponse.json(await db.select().from(s.pendingApprovals).orderBy(desc(s.pendingApprovals.createdAt)));
@@ -57,5 +58,6 @@ export async function PATCH(req: NextRequest) {
   await db.update(s.pendingApprovals)
     .set({ status: action === 'approve' ? 'approved' : 'rejected', reviewedAt: new Date() })
     .where(eq(s.pendingApprovals.id, id));
+  refreshSite();
   return NextResponse.json({ ok: true });
 }

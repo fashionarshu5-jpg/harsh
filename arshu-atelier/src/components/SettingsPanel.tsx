@@ -33,8 +33,11 @@ export default function SettingsPanel({ initial }: { initial: any }) {
 
   async function publish() {
     setMsg('Publishing…');
-    const r = await fetch('/api/admin/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(s) });
-    setMsg(r.ok ? 'Published — the public site is updated.' : 'Could not publish.');
+    try {
+      const r = await fetch('/api/admin/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(s) });
+      const j = await r.json().catch(() => ({}));
+      setMsg(r.ok ? '✅ Published – the public website is updated. Refresh it to see the change.' : `❌ Not saved: ${j.error || 'server error ' + r.status}. Open System Check.`);
+    } catch { setMsg('❌ Network error – nothing was saved.'); }
   }
 
   return (
@@ -60,7 +63,7 @@ export default function SettingsPanel({ initial }: { initial: any }) {
           <label key={k}>{label}{big ? <textarea rows={2} value={s.homeContent[k] || ''} onChange={(e) => home(k, e.target.value)} /> : <input value={s.homeContent[k] || ''} onChange={(e) => home(k, e.target.value)} />}</label>
         ))}</div>
         <div className="row">{s.homeContent.heroImage && <img className="thumb" src={s.homeContent.heroImage} alt="" />}
-          <input type="file" accept="image/*" onChange={async (e) => { const f = e.target.files?.[0]; if (f) try { home('heroImage', await uploadMedia(f)); } catch (x: any) { alert(x.message); } }} /></div>
+          <input type="file" accept="image/*" onChange={async (e) => { const f = e.target.files?.[0]; if (f) try { home('heroImage', await uploadMedia(f)); setMsg('📎 Image uploaded. Now press "Publish to live site".'); } catch (x: any) { alert(x.message); } }} /></div>
       </div>
       <div className="panel">
         <h3>Brand story, atelier &amp; contact</h3>

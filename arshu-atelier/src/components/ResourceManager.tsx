@@ -33,6 +33,7 @@ function Hotspots({ value, image, onChange }: { value: Pin[]; image: string; onC
 
 function ListUploader({ value, onChange, mode }: { value: any[]; onChange: (v: any[]) => void; mode: 'images' | 'refs' }) {
   const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
   const list = value || [];
   async function add(files: FileList | null) {
     if (!files) return;
@@ -86,15 +87,21 @@ export default function ResourceManager({ resource }: { resource: string }) {
     ['images', 'refs', 'hotspots', 'colors', 'materials'].includes(f.type) ? [] : f.type === 'number' ? 0 : f.type === 'select' ? f.options![0] : f.type === 'color' ? '#C5A880' : '']));
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
-  async function save() {
-    setBusy(true);
-    const r = await fetch(`/api/admin/resource/${resource}`, { method: form.id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-    setBusy(false);
-    if (!r.ok) return alert('Could not save. Check the required fields.');
-    setForm(null); load();
+  async function save(publish = false) {
+    setBusy(true); setMsg('');
+    const payload = publish ? { ...form, status: 'published' } : form;
+    try {
+      const r = await fetch(`/api/admin/resource/${resource}`, { method: form.id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const j = await r.json().catch(() => ({}));
+      setBusy(false);
+      if (!r.ok) return setMsg('❌ Not saved: ' + (j.error || `server error ${r.status}`) + ' (see Admin > System Check)');
+      setMsg(!cfg.hasStatus || payload.status === 'published' ? '✅ Saved – it is live on the website now.' : '✅ Saved as DRAFT – click "Publish" in the list to show it on the website.');
+      setForm(null); load();
+    } catch { setBusy(false); setMsg('❌ Network error – nothing was saved.'); }
   }
   async function toggle(it: any) {
-    await fetch(`/api/admin/resource/${resource}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: it.id, status: it.status === 'published' ? 'draft' : 'published' }) });
+    const r = await fetch(`/api/admin/resource/${resource}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: it.id, status: it.status === 'published' ? 'draft' : 'published' }) });
+    setMsg(r.ok ? (it.status === 'published' ? '✅ Hidden from the website.' : '✅ Published – live on the website now.') : '❌ Could not change status.');
     load();
   }
   async function del(it: any) {
@@ -127,7 +134,7 @@ export default function ResourceManager({ resource }: { resource: string }) {
             {v && f.type !== 'image' && <a href={v} target="_blank" rel="noreferrer">current file ↗</a>}
             <input type="file" accept={f.type === 'image' ? 'image/*' : f.type === 'video' ? 'video/mp4' : 'application/pdf'} onChange={async (e) => {
               const file = e.target.files?.[0]; if (!file) return;
-              try { set(f.key, f.type === 'pdf' ? await uploadPdf(file) : await uploadMedia(file)); } catch (err: any) { alert(err.message); }
+              try { set(f.key, f.type === 'pdf' ? await uploadPdf(file) : await uploadMedia(file)); setMsg('📎 File uploaded. Now press Save (or Save & Publish) to apply it.'); } catch (err: any) { alert(err.message); }
             }} />
           </div>
         );
@@ -138,10 +145,11 @@ export default function ResourceManager({ resource }: { resource: string }) {
   return (
     <div className="panel">
       <div className="li"><h3>{cfg.title}</h3><button className="ab pri" onClick={() => setForm(blank())}>+ New {cfg.singular}</button></div>
+      {msg && <div className="li" style={{ background: '#faf8f4', padding: 12 }}><b>{msg}</b>{msg.startsWith('✅') && <a href="/" target="_blank" rel="noreferrer" style={{ textDecoration: 'underline' }}>Open website ↗</a>}</div>}
       {form && (
         <div className="panel" style={{ background: '#faf8f4' }}>
           {cfg.fields.map((f) => <label key={f.key}>{f.label}{f.hint && <small className="muted">{f.hint}</small>}{render(f)}</label>)}
-          <div className="row"><button className="ab dk" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save'}</button><button className="ab" onClick={() => setForm(null)}>Cancel</button></div>
+          <div className="row"><button className="ab dk" onClick={() => save()} disabled={busy}>{busy ? 'Saving…' : 'Save'}</button>{cfg.hasStatus && <button className="ab pri" onClick={() => save(true)} disabled={busy}>Save &amp; Publish</button>}<button className="ab" onClick={() => setForm(null)}>Cancel</button></div>
         </div>
       )}
       {items.map((it) => (
