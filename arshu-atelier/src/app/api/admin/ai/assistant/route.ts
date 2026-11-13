@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { MODEL, explainGeminiError, getAi, withTimeout } from '@/lib/gemini';
+import { MODEL, explainGeminiError, fastThinking, getAi, withTimeout } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       model: MODEL,
       contents: prompt.slice(0, 4000),
       config: {
-        thinkingConfig: { thinkingBudget: 0 },
+        thinkingConfig: fastThinking(),
         systemInstruction:
           'You are the AI fashion assistant of ARSHU, a luxury Indo-Western womenswear atelier in Surat. Be specific, elegant and practical. You only suggest: nothing you write is published automatically.',
       },

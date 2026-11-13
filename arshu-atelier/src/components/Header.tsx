@@ -5,13 +5,13 @@ import { usePathname } from 'next/navigation';
 const LINKS = [['/', 'Home'], ['/collections', 'Collections'], ['/about', 'About'], ['/moodboards', 'Moodboards'],
   ['/sketches', 'Sketches'], ['/materials', 'Materials'], ['/research', 'Research'], ['/contact', 'Contact']];
 
-export default function Header({ brand, tagline, button, instagram }: { brand: string; tagline: string; button: string; instagram: string }) {
+export default function Header({ brand, tagline, button, instagram, hide = [] }: { brand: string; tagline: string; button: string; instagram: string; hide?: string[] }) {
   const path = usePathname();
   return (
     <header className="site-h">
       <Link href="/" className="logo"><b>{brand}</b><i>{tagline}</i></Link>
       <nav className="nav">
-        {LINKS.map(([h, l]) => <Link key={h} href={h} className={(h === '/' ? path === '/' : path.startsWith(h)) ? 'on' : ''}>{l}</Link>)}
+        {LINKS.filter(([h]) => !hide.includes(h)).map(([h, l]) => <Link key={h} href={h} className={(h === '/' ? path === '/' : path.startsWith(h)) ? 'on' : ''}>{l}</Link>)}
       </nav>
       <div className="h-right">
         {instagram && (

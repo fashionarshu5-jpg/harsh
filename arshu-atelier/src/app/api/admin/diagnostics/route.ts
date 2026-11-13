@@ -4,7 +4,7 @@ import { eq, sql } from 'drizzle-orm';
 import { getStore } from '@netlify/blobs';
 import { db } from '@/db';
 import * as s from '@/db/schema';
-import { MODEL, explainGeminiError, getAi, withTimeout } from '@/lib/gemini';
+import { MODEL, explainGeminiError, fastThinking, getAi, withTimeout } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -51,7 +51,7 @@ export async function GET() {
   // 3. Gemini (tiny real call)
   try {
     const t0 = Date.now();
-    const res: any = await withTimeout(getAi().models.generateContent({ model: MODEL, contents: 'Reply with the single word OK', config: { thinkingConfig: { thinkingBudget: 0 } } }), 15000);
+    const res: any = await withTimeout(getAi().models.generateContent({ model: MODEL, contents: 'Reply with the single word OK', config: { thinkingConfig: fastThinking() } }), 15000);
     out.push({ name: `AI agent (Gemini, ${MODEL})`, ok: /ok/i.test(res.text || ''), detail: `Answered "${String(res.text || '').trim().slice(0, 30)}" in ${Date.now() - t0} ms` });
   } catch (e) { const x = explainGeminiError(e); out.push({ name: `AI agent (Gemini, ${MODEL})`, ok: false, detail: x.detail, fix: x.error }); }
   if (env.GEMINI_API_KEY) out.push({ name: 'Gemini key type', ok: true, detail: env.GEMINI_API_KEY.startsWith('AQ.') ? 'New "AQ." key (works with the official SDK)' : env.GEMINI_API_KEY.startsWith('AIza') ? 'Classic "AIza" key' : 'Unknown format' });

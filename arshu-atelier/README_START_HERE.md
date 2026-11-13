@@ -3,7 +3,7 @@
 You do NOT need to install anything on your computer. Everything is done in the browser.
 Total time: about 40 minutes. Free tiers are enough for all services.
 
-IMPORTANT: Make your GitHub repository PRIVATE (the default admin password is inside the code).
+IMPORTANT: Make your GitHub repository PRIVATE.
 
 ---------------------------------------------------------------
 STEP 1 – Create the database (Neon)
@@ -53,25 +53,41 @@ STEP 6 – Publish on Netlify
       CLOUDINARY_CLOUD_NAME   (from Step 2)
       CLOUDINARY_API_KEY      (from Step 2)
       CLOUDINARY_API_SECRET   (from Step 2)
+      ADMIN_USERNAME          (your admin login name, choose your own)
+      ADMIN_PASSWORD_HASH     (bcrypt hash of your password - see Step 7)
+   Add these 8 variables. The admin login is DISABLED until the last two are set (no password is stored in the code).
 4. Click "Deploy". Wait 3-5 minutes. Netlify gives you a link like https://something.netlify.app.
 
 ---------------------------------------------------------------
-STEP 7 – First login and setup
+STEP 7 - Create your admin password (required)
 ---------------------------------------------------------------
-1. Open  YOUR-LINK/admin/login
-   Username: Harsh Chandegara     Password: Arshu@1226
-2. Website Customization -> upload your hero image, edit texts, pick colours/fonts -> "Publish to live site".
-3. Collections -> New collection -> set status "published".
-4. Materials -> add swatches. Outfits -> add looks (upload photos, pick the collection, link materials, publish).
-5. Open the home page: your changes are live.
+1. Pick a long, unique password (12+ characters, not used anywhere else).
+2. Open any "bcrypt generator" website, enter the password, set rounds/cost = 12, copy the hash
+   (it starts with $2a$ or $2b$ and is 60 characters long).
+3. Netlify -> Site configuration -> Environment variables: set
+      ADMIN_USERNAME       = the login name you want
+      ADMIN_PASSWORD_HASH  = the hash you copied
+4. Deploys -> "Trigger deploy" -> "Deploy site". Then open YOUR-LINK/admin/login and sign in.
+   Never write the password itself in GitHub or Netlify - only the hash.
+
+OPTIONAL but recommended - two-factor login (Google Authenticator / Authy):
+   a. Create a random secret of 16+ letters/numbers using only A-Z and 2-7, e.g. KJ4HWQ2ZPXN6ATRE.
+   b. In your authenticator app choose "Enter a setup key", type that secret (any account name, type: time-based).
+   c. In Netlify add  ADMIN_TOTP_SECRET = that same secret, then trigger a deploy.
+   After this, login asks for the 6-digit code after the password.
+
+Built-in protections: 5 wrong logins from one address locks it for 15 minutes, a global limit stops
+distributed guessing, sessions last 24 hours, and /admin is hidden from Google.
 
 ---------------------------------------------------------------
-STEP 8 – Change the admin password (do this soon)
+STEP 8 - Fill the website (otherwise pages stay empty)
 ---------------------------------------------------------------
-Make a bcrypt hash of your new password at any "bcrypt generator" (cost/rounds = 12).
-In Netlify -> Site configuration -> Environment variables add:
-   ADMIN_PASSWORD_HASH = (the hash)      ADMIN_USERNAME = (your username)
-Then Deploys -> "Trigger deploy". The built-in password stops working.
+1. Website Customization -> upload your hero image, edit texts, pick colours/fonts -> "Publish to live site".
+2. Collections -> New collection -> give it a REAL title (blank / "untitled" is now refused) -> set status "published".
+3. Materials -> add swatches. Outfits -> add looks (upload photos, pick the collection, link materials, publish).
+4. Moodboards / Sketches -> add and publish. Research -> "Save to Research Library".
+The public site automatically hides empty sections and collections without published looks,
+so visitors only see pages that have content.
 
 ---------------------------------------------------------------
 Using a custom domain (optional)
@@ -81,7 +97,8 @@ Netlify -> Domain management -> Add a domain.
 ---------------------------------------------------------------
 If something goes wrong
 ---------------------------------------------------------------
-* Site loads but is empty            -> normal until you publish collections in Admin.
+* Site loads but is empty            -> normal until you publish collections AND looks in Admin.
+* Admin says "not configured"       -> set ADMIN_USERNAME, ADMIN_PASSWORD_HASH and a 40+ character SESSION_SECRET, then redeploy.
 * "Cannot save" / error on admin     -> DATABASE_URL wrong, or schema.sql was not run (Step 1.3).
 * Image upload fails                 -> check the 3 Cloudinary variables, then redeploy.
 * AI research shows an error         -> check GEMINI_API_KEY. Free tier has limits: research 1-2

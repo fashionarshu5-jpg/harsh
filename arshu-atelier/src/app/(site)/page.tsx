@@ -1,14 +1,17 @@
 import Link from 'next/link';
 import { asc, eq } from 'drizzle-orm';
 import { db } from '@/db';
-import { collections } from '@/db/schema';
+import { collections, outfits } from '@/db/schema';
 import { getSettings } from '@/lib/settings';
-import { opt, safe } from '@/lib/util';
+import { hasRealTitle, opt, safe } from '@/lib/util';
 
 export default async function Home() {
   const s = await getSettings();
   const h = s.homeContent;
-  const cols = await safe(db.select().from(collections).where(eq(collections.status, 'published')).orderBy(asc(collections.sortOrder)).limit(3), []);
+  const all = await safe(db.select().from(collections).where(eq(collections.status, 'published')).orderBy(asc(collections.sortOrder)), []);
+  const looks = await safe(db.select({ c: outfits.collectionId }).from(outfits).where(eq(outfits.status, 'published')), []);
+  // Only show collections that have a real title AND at least one published look.
+  const cols = all.filter((c) => hasRealTitle(c.title) && looks.some((l) => l.c === c.id)).slice(0, 3);
   return (
     <>
       <section className="hero">
@@ -34,7 +37,7 @@ export default async function Home() {
             <span>{c.title} &nbsp;✦</span>
           </Link>
         ))}
-        {cols.length === 0 && [1, 2, 3].map((n) => <div key={n} className="card"><span>Add a published collection in Admin</span></div>)}
+        {cols.length === 0 && <div className="card"><span>New collection coming soon &nbsp;✦</span></div>}
         <div className="mark"><span style={{ color: 'var(--terracotta)', fontSize: 30 }}>✦</span><b>{s.brandName}</b><span className="eyebrow" style={{ fontSize: 9 }}>{h.brandTagline}</span></div>
       </section>
     </>

@@ -5,7 +5,12 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata() {
   const s = await getSettings();
-  return { title: `${s.brandName} — ${s.homeContent.brandTagline}`, description: 'Luxury Indo-Western womenswear atelier, Surat.' };
+  const desc = 'Luxury Indo-Western womenswear atelier in Surat, Gujarat — heritage craftsmanship meets modern design.';
+  return {
+    title: { default: `${s.brandName} — ${s.homeContent.brandTagline}`, template: `%s — ${s.brandName}` },
+    description: desc,
+    openGraph: { title: `${s.brandName} — ${s.homeContent.brandTagline}`, description: desc, type: 'website' },
+  };
 }
 
 const fam = (n: string, spec: string) => `family=${n.trim().replace(/ /g, '+')}:${spec}`;

@@ -1,5 +1,7 @@
 import { getSettings } from '@/lib/settings';
 
+export const metadata = { title: 'About', description: 'The story of ARSHU, an Indo-Western couture atelier in Surat blending Indian heritage with contemporary design.' };
+
 export default async function About() {
   const s = await getSettings();
   return (

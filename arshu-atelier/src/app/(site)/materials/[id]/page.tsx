@@ -4,6 +4,12 @@ import { db } from '@/db';
 import { materialArchive } from '@/db/schema';
 import { opt, safe } from '@/lib/util';
 
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  if (!/^[0-9a-f-]{36}$/.test(params.id)) return { title: 'Material' };
+  const [m] = await safe(db.select().from(materialArchive).where(eq(materialArchive.id, params.id)), []);
+  return { title: m ? m.materialName : 'Material' };
+}
+
 export default async function Material({ params }: { params: { id: string } }) {
   if (!/^[0-9a-f-]{36}$/.test(params.id)) notFound();
   const [m] = await safe(db.select().from(materialArchive).where(eq(materialArchive.id, params.id)), []);

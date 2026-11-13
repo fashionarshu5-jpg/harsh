@@ -3,11 +3,17 @@ import { and, asc, eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { db } from '@/db';
 import { collections, moodboards, outfits } from '@/db/schema';
-import { lookHref, opt, safe } from '@/lib/util';
+import { hasRealTitle, lookHref, opt, safe } from '@/lib/util';
+
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const [c] = await safe(db.select().from(collections).where(and(eq(collections.slug, params.slug), eq(collections.status, 'published'))), []);
+  if (!c || !hasRealTitle(c.title)) return { title: 'Collection', robots: { index: false } };
+  return { title: c.title, description: (c.conceptDescription || `The ${c.title} collection by ARSHU.`).slice(0, 160) };
+}
 
 export default async function CollectionPage({ params }: { params: { slug: string } }) {
   const [c] = await safe(db.select().from(collections).where(and(eq(collections.slug, params.slug), eq(collections.status, 'published'))), []);
-  if (!c) notFound();
+  if (!c || !hasRealTitle(c.title)) notFound();
   const looks = await safe(db.select().from(outfits).where(and(eq(outfits.collectionId, c.id), eq(outfits.status, 'published'))).orderBy(asc(outfits.lookNumber)), []);
   const boards = await safe(db.select().from(moodboards).where(and(eq(moodboards.collectionId, c.id), eq(moodboards.status, 'published'))), []);
   return (

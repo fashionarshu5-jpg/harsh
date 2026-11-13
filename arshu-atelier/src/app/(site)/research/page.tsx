@@ -2,6 +2,9 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { aiResearchEntries } from '@/db/schema';
 import { safe } from '@/lib/util';
+import EmptyNote from '@/components/EmptyNote';
+
+export const metadata = { title: 'Research', description: 'Atelier research notes on textiles, craft and fashion.' };
 
 // Shows only research entries the admin chose to "Save to Research Library".
 export default async function Research() {
@@ -18,7 +21,7 @@ export default async function Research() {
             <div className="row">{(r.sourceLinks || []).slice(0, 3).map((l, i) => <a key={i} className="chip" href={l.url} target="_blank" rel="noreferrer">{l.title.slice(0, 30)} ↗</a>)}</div>
           </article>
         ))}
-        {rows.length === 0 && <p className="muted">Nothing here yet.</p>}
+        {rows.length === 0 && <EmptyNote what="Research notes" />}
       </div>
     </div>
   );

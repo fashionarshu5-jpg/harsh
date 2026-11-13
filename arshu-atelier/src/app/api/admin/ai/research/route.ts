@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { aiResearchEntries, adminNotifications } from '@/db/schema';
-import { MODEL, explainGeminiError, getAi, withTimeout } from '@/lib/gemini';
+import { MODEL, explainGeminiError, fastThinking, getAi, withTimeout } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -44,19 +44,20 @@ export async function POST(req: NextRequest) {
     // Attempt 1: live Google Search (max 17 s so we stay inside Netlify's 30 s limit).
     const res: any = await withTimeout(ai.models.generateContent({
       model: MODEL, contents: prompt(category, region, true),
-      config: { tools: [{ googleSearch: {} }], temperature: 0.5, thinkingConfig: { thinkingBudget: 0 } },
+      config: { tools: [{ googleSearch: {} }], temperature: 0.5, thinkingConfig: fastThinking() },
     }), 17000);
     items = parse(res.text || '');
     const chunks: any[] = res.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     // Only links Google Search really returned – never model-written URLs.
     links = chunks.filter((c) => c.web?.uri).map((c) => ({ title: c.web.title || c.web.uri, url: c.web.uri })).slice(0, 8);
+    if (!links.length) mode = 'conceptual'; // search returned no sources: do not claim it is verified/live
   } catch (e1) {
     // Attempt 2: conceptual reasoning without search (fast).
     mode = 'conceptual';
     try {
       const res: any = await withTimeout(ai.models.generateContent({
         model: MODEL, contents: prompt(category, region, false),
-        config: { temperature: 0.7, thinkingConfig: { thinkingBudget: 0 } },
+        config: { temperature: 0.7, thinkingConfig: fastThinking() },
       }), 9000);
       items = parse(res.text || '');
     } catch (e2) {

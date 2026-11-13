@@ -1,7 +1,14 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 // Change the model without touching code: set GEMINI_MODEL in Netlify (e.g. if Google retires this one).
-export const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+export const MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+
+/** Keep answers fast. Gemini 3.x uses thinkingLevel (minimal is rejected by 3.8); 2.5 uses thinkingBudget. */
+export function fastThinking(): any {
+  return MODEL.startsWith('gemini-3')
+    ? { thinkingLevel: (ThinkingLevel as any)?.LOW ?? 'LOW' }
+    : { thinkingBudget: 0 };
+}
 
 export function getAi() {
   const key = process.env.GEMINI_API_KEY;
