@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Makes sure Netlify serves this project as a Next.js app (server pages + admin + API routes).
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
