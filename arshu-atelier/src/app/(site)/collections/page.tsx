@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { asc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { collections, outfits } from '@/db/schema';
-import { hasRealTitle, opt, safe } from '@/lib/util';
+import { hasRealTitle, opt } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 export const metadata = { title: 'Collections', description: "Explore ARSHU's Indo-Western couture collections." };
 

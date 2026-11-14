@@ -3,7 +3,8 @@ import { and, asc, eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { db } from '@/db';
 import { collections, moodboards, outfits } from '@/db/schema';
-import { hasRealTitle, lookHref, opt, safe } from '@/lib/util';
+import { hasRealTitle, lookHref, opt } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const [c] = await safe(db.select().from(collections).where(and(eq(collections.slug, params.slug), eq(collections.status, 'published'))), []);

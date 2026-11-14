@@ -3,7 +3,8 @@ import { asc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { collections, outfits } from '@/db/schema';
 import { getSettings } from '@/lib/settings';
-import { hasRealTitle, opt, safe } from '@/lib/util';
+import { hasRealTitle, opt } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 export default async function Home() {
   const s = await getSettings();

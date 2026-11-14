@@ -1,7 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { aiResearchEntries } from '@/db/schema';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 import EmptyNote from '@/components/EmptyNote';
 
 export const metadata = { title: 'Research', description: 'Atelier research notes on textiles, craft and fashion.' };

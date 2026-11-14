@@ -2,7 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { sketches } from '@/db/schema';
 import SketchViewer from '@/components/SketchViewer';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 import EmptyNote from '@/components/EmptyNote';
 
 export const metadata = { title: 'Sketches & Technical Flats', description: 'Design sketches and technical flats from the ARSHU atelier.' };

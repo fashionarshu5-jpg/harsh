@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { db } from '@/db';
 import { collections, materialArchive, outfits } from '@/db/schema';
 import OutfitView from '@/components/OutfitView';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 // URL: /collections/<collection-slug>/look-<number>-<slug>
 export async function generateMetadata({ params }: { params: { slug: string; lookSlug: string } }) {

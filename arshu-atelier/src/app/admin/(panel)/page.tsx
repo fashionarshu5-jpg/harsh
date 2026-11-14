@@ -3,7 +3,7 @@ import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { aiResearchEntries, outfits, pendingApprovals } from '@/db/schema';
 import PreviewButton from '@/components/PreviewButton';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 export const dynamic = 'force-dynamic';
 

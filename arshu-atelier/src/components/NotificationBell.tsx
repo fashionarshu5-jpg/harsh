@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function NotificationBell() {
   const [d, setD] = useState<{ items: any[]; unread: number }>({ items: [], unread: 0 });
   const [open, setOpen] = useState(false);
-  const load = () => fetch('/api/admin/notifications').then((r) => r.json()).then(setD).catch(() => {});
+  const load = () => fetch('/api/admin/notifications', { cache: 'no-store' }).then((r) => r.json()).then((j) => { if (j && Array.isArray(j.items)) setD(j); }).catch(() => {});
   useEffect(() => { load(); const t = setInterval(load, 20000); return () => clearInterval(t); }, []);
   async function toggle() {
     setOpen(!open);

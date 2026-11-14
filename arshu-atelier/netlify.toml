@@ -1,11 +1,6 @@
-# Put THIS file in the ROOT of the GitHub repository (next to the "arshu-atelier" folder).
-# It tells Netlify that the website project lives inside the "arshu-atelier" folder.
 [build]
-  base = "arshu-atelier"
   command = "npm run build"
-
-[build.environment]
-  NODE_VERSION = "20"
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

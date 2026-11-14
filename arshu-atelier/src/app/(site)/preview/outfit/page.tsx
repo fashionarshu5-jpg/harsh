@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { materialArchive, outfits } from '@/db/schema';
 import OutfitView from '@/components/OutfitView';
 import { verifyPreview } from '@/lib/auth';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 // Private mobile preview of a DRAFT look: /preview/outfit?token=...
 export const metadata = { robots: { index: false, follow: false } };

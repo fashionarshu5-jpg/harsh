@@ -76,10 +76,18 @@ export default function ResourceManager({ resource }: { resource: string }) {
   const [form, setForm] = useState<any | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const getList = async (name: string): Promise<any[]> => {
+    try {
+      const j = await fetch(`/api/admin/resource/${name}`, { cache: 'no-store' }).then((r) => r.json());
+      if (Array.isArray(j)) return j;
+      setMsg('❌ Could not load the list: ' + (j?.error || 'unexpected answer') + ' (open System Check, and log in again if your session ended)');
+    } catch { setMsg('❌ Could not reach the server.'); }
+    return [];
+  };
   const load = async () => {
-    setItems(await fetch(`/api/admin/resource/${resource}`).then((r) => r.json()));
-    if (cfg.fields.some((f) => f.type === 'collection')) setCols(await fetch('/api/admin/resource/collections').then((r) => r.json()));
-    if (cfg.fields.some((f) => f.type === 'materials')) setMats(await fetch('/api/admin/resource/materials').then((r) => r.json()));
+    setItems(await getList(resource));
+    if (cfg.fields.some((f) => f.type === 'collection')) setCols(await getList('collections'));
+    if (cfg.fields.some((f) => f.type === 'materials')) setMats(await getList('materials'));
   };
   useEffect(() => { load(); }, [resource]);
 

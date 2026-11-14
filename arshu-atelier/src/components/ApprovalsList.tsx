@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 export default function ApprovalsList() {
   const [rows, setRows] = useState<any[]>([]);
-  const load = () => fetch('/api/admin/approvals').then((r) => r.json()).then(setRows);
+  const load = () => fetch('/api/admin/approvals', { cache: 'no-store' }).then((r) => r.json()).then((j) => setRows(Array.isArray(j) ? j : [])).catch(() => setRows([]));
   useEffect(() => { load(); }, []);
   async function act(id: string, action: 'approve' | 'reject') {
     await fetch('/api/admin/approvals', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }) });

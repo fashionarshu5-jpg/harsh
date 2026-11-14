@@ -2,7 +2,8 @@ import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { db } from '@/db';
 import { materialArchive } from '@/db/schema';
-import { opt, safe } from '@/lib/util';
+import { opt } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   if (!/^[0-9a-f-]{36}$/.test(params.id)) return { title: 'Material' };

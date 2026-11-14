@@ -2,7 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { moodboards } from '@/db/schema';
 import MoodboardView from '@/components/MoodboardView';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 import EmptyNote from '@/components/EmptyNote';
 
 export const metadata = { title: 'Moodboards', description: 'Inspiration moodboards behind the ARSHU collections.' };

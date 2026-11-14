@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { moodboards, sketches, materialArchive, aiResearchEntries } from '@/db/schema';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 
 const count = async (q: PromiseLike<{ n: number }[]>) => Number((await safe(q, [{ n: 0 }]))[0]?.n || 0);
 

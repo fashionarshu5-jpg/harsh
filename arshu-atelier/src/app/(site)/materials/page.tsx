@@ -2,7 +2,7 @@ import { desc } from 'drizzle-orm';
 import { db } from '@/db';
 import { materialArchive } from '@/db/schema';
 import MaterialsBrowser from '@/components/MaterialsBrowser';
-import { safe } from '@/lib/util';
+import { safe } from '@/lib/safe';
 import EmptyNote from '@/components/EmptyNote';
 
 export const metadata = { title: 'Material Archive', description: 'A swatch library of fabrics, weaves and embroidery used by ARSHU.' };
